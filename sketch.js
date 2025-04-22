@@ -7,8 +7,13 @@ let Pupilimage;
 let GameoverImage;
 let Titlescreen
 let Brainjar;
+let Pausebutton;
+let Playbutton;
+let Shocks
 
 //OTHER STF
+let imgWidth = 1200;
+let imgHeight = 600;
 let floatAmount = 15; 
 let floatSpeed = 0.015; 
 let angle = 0;
@@ -21,7 +26,23 @@ let btnX, btnY, btnW = 1200, btnH = 600;
 let bjw = 200, bjh = 200
 let hoverTint = 0;
 let gameOverTime = 0;
-let gameOverDelay = 2000;
+let gameOverDelay = 1000;
+//SPECIFIC TO EYEBALL
+let eyeballRelX = 1025 / 1200;
+let eyeballRelY = 443 / 600;
+let ex, ey;
+//SPECIFIC TO BRAINJAR
+let titleRelX = 0.465;
+let titleRelY = 0.45;
+let titleImgW = 1200;
+let titleImgH = 600;
+//PLAY PAUSE
+let paused = false;
+let pauseX = 0.84;
+let pauseY = 0.015;
+let pauseW = 60;
+let pauseH = 60;
+let btnBrightness = 200;
 
 function preload(){
   BackgroundSquare = loadImage("backgroundsquare.png");
@@ -32,29 +53,39 @@ function preload(){
   GameoverImage = loadImage("Gameover.png")
   Titlescreen = loadImage("titlescreen.png");
   Brainjar = loadImage("brainjar.png");
+  Pausebutton = loadImage("Pausebutton.png");
+  Playbutton = loadImage("Playbutton.png");
+  Shocks = loadImage("Shockselec.gif");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   //AMNT FOR BARS
   decayRate = 1 / (60 * 10);
-  bars.push({ x: 265, y: 125, level: 1 });
-  bars.push({ x: 265, y: 593, level: 1 });
-  bars.push({ x: 1002, y: 593, level: 1 });
+  //RELATIVE TO CONTROLBOARD
+  let barPositions = [
+    { relX: 0.1440, relY: 0.1000 },
+    { relX: 0.1440, relY: 0.8805 },
+    { relX: 0.7580, relY: 0.8805 },
+  ];
+  for (let pos of barPositions) {
+    bars.push({ relX: pos.relX, relY: pos.relY, level: 1 });
+  }
 }
 
 function draw() {
+  
   background(19, 17, 55);
-  let imgWidth = 1200; 
-  let imgHeight = 600;
-  let ex = (width - imgWidth) / 2;
-  let ey = (height - imgHeight) / 2;
+  imgWidth = 1200;
+  imgHeight = 600;
+  ex = (width - imgWidth) / 2;
+  ey = (height - imgHeight) / 2;
 
   if (!gameStarted) {
     imageMode(CENTER);
-    btnX = 650;
-    btnY = 330; 
-    image(Titlescreen, width / 2, height / 2, btnW, btnH);
+    btnX = width / 2 + titleRelX * titleImgW - titleImgW / 2;
+    btnY = height / 2 + titleRelY * titleImgH - titleImgH / 2;
+    image(Titlescreen, width / 2, height / 2, titleImgW, titleImgH);
 
     //HOVER
     let hovering = (
@@ -82,13 +113,31 @@ function draw() {
     let yOffset = sin(angle) * floatAmount;
     image(Brainthing, ex, ey + yOffset, 1200, 600);
     angle += floatSpeed;
-
     image(Controlboard, ex, ey, 1200, 600);
     image(Movingwire, ex, ey, 1200, 600);
+    image(Shocks, ex, ey, 1200, 600);
+
+    let pauseBtnX = ex + pauseX * imgWidth;
+    let pauseBtnY = ey + pauseY * imgHeight;
+    let btnImage = paused ? Playbutton : Pausebutton;
+    
+    //DIM BTN 
+    let isHoveringPause = (
+      mouseX > pauseBtnX &&
+      mouseX < pauseBtnX + pauseW &&
+      mouseY > pauseBtnY &&
+      mouseY < pauseBtnY + pauseH
+    );
+    let targetBrightness = isHoveringPause ? 160 : 255;
+    let ease = 0.1;
+    btnBrightness = lerp(btnBrightness, targetBrightness, ease);
+    tint(btnBrightness);
+    image(btnImage, pauseBtnX, pauseBtnY, pauseW, pauseH);
+    noTint();
 
  //PUPIL AND EYE
-let eyeballX = 1115;
-let eyeballY = 505;
+ let eyeballX = ex + eyeballRelX * imgWidth;
+ let eyeballY = ey + eyeballRelY * imgHeight;
 let eyeballRadius = 40;
 let pupilWidth = 55;  
 let pupilHeight = 55;
@@ -132,33 +181,30 @@ if (gameOver) {
 //BAR DECAY
 for (let i = 0; i < bars.length; i++) {
   let bar = bars[i];
-  bar.level -= decayRate;
-  bar.level = constrain(bar.level, 0, 1);
+  let barX = ex + bar.relX * imgWidth;
+  let barY = ey + bar.relY * imgHeight;
   let barWidth = 135;
   let barHeight = 16;
   let fillWidth = barWidth * bar.level;
 
-  // FLASH LOGIC
+  if (!paused) {
+    bar.level -= decayRate;
+    bar.level = constrain(bar.level, 0, 1);
+  }
   let isLow = bar.level < 0.2;
   let flashing = isLow && (frameCount % 20 < 10); 
-  if (flashing) {
-    fill(255, 0, 0); 
-  } else {
-    fill(255, 120, 0); 
-  }
-
-//BAR
+  fill(flashing ? color(255, 0, 150) : color(207, 72, 10));
   noStroke();
-  rect(bar.x, bar.y, fillWidth, barHeight);
+  rect(barX, barY, fillWidth, barHeight);
   noFill();
-  stroke(0);
-  rect(bar.x, bar.y, barWidth, barHeight);
+  stroke(38, 26, 97);
+  rect(barX, barY, barWidth, barHeight);
   if (
     mouseIsPressed &&
-    mouseX > bar.x &&
-    mouseX < bar.x + barWidth &&
-    mouseY > bar.y &&
-    mouseY < bar.y + barHeight
+    mouseX > barX &&
+    mouseX < barX + barWidth &&
+    mouseY > barY &&
+    mouseY < barY + barHeight
   ) {
     bar.level += 0.01;
     bar.level = constrain(bar.level, 0, 1);
@@ -166,11 +212,20 @@ for (let i = 0; i < bars.length; i++) {
   if (bar.level <= 0) {
     gameOver = true;
     gameOverTime = millis();
-}
+  }
 }
 }
 
+
 function mousePressed() {
+
+  //DEBUG TOOL TO CHECK MOUSE X Y LOCATION
+  /*if (gameStarted && !gameOver) {
+    let relX = (mouseX - ex) / imgWidth;
+    let relY = (mouseY - ey) / imgHeight;
+    console.log(`{ relX: ${relX.toFixed(4)}, relY: ${relY.toFixed(4)} },`);
+  }*/
+
   if (!gameStarted) {
     if (
       mouseX > btnX - bjw / 2 &&
@@ -184,5 +239,19 @@ function mousePressed() {
   }
   if (gameOver && millis() - gameOverTime > gameOverDelay) {
     location.reload();
+  }
+
+  if (gameStarted && !gameOver) {
+    let pauseBtnX = ex + pauseX * imgWidth;
+    let pauseBtnY = ey + pauseY * imgHeight;
+    if (
+      mouseX > pauseBtnX &&
+      mouseX < pauseBtnX + pauseW &&
+      mouseY > pauseBtnY &&
+      mouseY < pauseBtnY + pauseH
+    ) {
+      paused = !paused;
+      return; 
+    }
   }
 }
