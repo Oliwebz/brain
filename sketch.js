@@ -136,8 +136,8 @@ function draw() {
     noTint();
 
  //PUPIL AND EYE
- let eyeballX = ex + eyeballRelX * imgWidth;
- let eyeballY = ey + eyeballRelY * imgHeight;
+let eyeballX = ex + eyeballRelX * imgWidth;
+let eyeballY = ey + eyeballRelY * imgHeight;
 let eyeballRadius = 40;
 let pupilWidth = 55;  
 let pupilHeight = 55;
@@ -187,19 +187,29 @@ for (let i = 0; i < bars.length; i++) {
   let barHeight = 16;
   let fillWidth = barWidth * bar.level;
 
+  
   if (!paused) {
     bar.level -= decayRate;
     bar.level = constrain(bar.level, 0, 1);
   }
   let isLow = bar.level < 0.2;
   let flashing = isLow && (frameCount % 20 < 10); 
-  fill(flashing ? color(255, 0, 150) : color(207, 72, 10));
+  let blinkingPaused = paused && (frameCount % 20 < 10);
+  if (blinkingPaused) {
+    fill(255, 0, 150); 
+  } else if (flashing) {
+    fill(250, 240, 255); 
+  } else {
+    fill(207, 72, 10); 
+  }
+
   noStroke();
   rect(barX, barY, fillWidth, barHeight);
   noFill();
   stroke(38, 26, 97);
   rect(barX, barY, barWidth, barHeight);
   if (
+    !paused &&
     mouseIsPressed &&
     mouseX > barX &&
     mouseX < barX + barWidth &&
