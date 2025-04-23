@@ -11,11 +11,11 @@ let Pausebutton;
 let Playbutton;
 let Shocks
 
-//OTHER STF
-let imgWidth = 1200;
-let imgHeight = 600;
-let floatAmount = 15; 
-let floatSpeed = 0.015; 
+// OTHER STUFF
+const imgWidth = 1200;
+const imgHeight = 600;
+const floatAmount = 15;
+const floatSpeed = 0.015;
 let angle = 0;
 let bars = [];
 let decayRate;
@@ -23,20 +23,23 @@ let gameOver = false;
 let gameOverAlpha = 0;
 let gameStarted = false;
 let btnX, btnY, btnW = 1200, btnH = 600;
-let bjw = 200, bjh = 200
+let bjw = 200, bjh = 200;
 let hoverTint = 0;
 let gameOverTime = 0;
 let gameOverDelay = 1000;
-//SPECIFIC TO EYEBALL
+
+// SPECIFIC TO EYEBALL
 let eyeballRelX = 1025 / 1200;
 let eyeballRelY = 443 / 600;
 let ex, ey;
-//SPECIFIC TO BRAINJAR
-let titleRelX = 0.465;
-let titleRelY = 0.45;
-let titleImgW = 1200;
-let titleImgH = 600;
-//PLAY PAUSE
+
+// SPECIFIC TO BRAINJAR
+const titleRelX = 0.465;
+const titleRelY = 0.45;
+const titleImgW = 1200;
+const titleImgH = 600;
+
+// PLAY PAUSE
 let paused = false;
 let pauseX = 0.84;
 let pauseY = 0.015;
@@ -76,8 +79,6 @@ function setup() {
 function draw() {
   
   background(19, 17, 55);
-  imgWidth = 1200;
-  imgHeight = 600;
   ex = (width - imgWidth) / 2;
   ey = (height - imgHeight) / 2;
 
